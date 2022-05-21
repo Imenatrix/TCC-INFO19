@@ -6,7 +6,7 @@ def create_model(input_shape, nb_outputs):
     
     x = Conv2D(32, 8, strides=4, activation='relu')(inputs)
     x = Conv2D(64, 4, strides=4, activation='relu')(x)
-    x = Conv2D(64, 3, strides=1, activation='relu')(x)
+    #x = Conv2D(64, 3, strides=1, activation='relu')(x)
 
     x = Flatten()(x)
 
