@@ -60,7 +60,7 @@ def train(model, model_target, env):
                 frame_sample = []
             start = time.time()
 
-            env.render()
+            #env.render()
             frame_count += 1
 
             if frame_count < epsilon_random_frames or epsilon > np.random.rand(1)[0]:
@@ -98,7 +98,7 @@ def train(model, model_target, env):
                     [float(done_history[i]) for i in indices]
                 )
 
-                future_rewards = model_target.predict(state_next_sample)
+                future_rewards = predict_target(model_target, state_next_sample)
                 updated_q_values = rewards_sample + gamma * tf.reduce_max (
                     future_rewards, axis=1
                 )
@@ -106,13 +106,7 @@ def train(model, model_target, env):
 
                 masks = tf.one_hot(action_sample, num_actions)
 
-                with tf.GradientTape() as tape:
-                    q_values = model(state_sample)
-                    q_action = tf.reduce_sum(tf.multiply(q_values, masks), axis=1)
-                    loss = loss_function(updated_q_values, q_action)
-
-                grads = tape.gradient(loss, model.trainable_variables)
-                optimizer.apply_gradients(zip(grads, model.trainable_variables))
+                backpropagation(model, optimizer, loss_function, state_sample, updated_q_values, masks)
 
             if frame_count % update_target_network == 0:
                 model_target.set_weights(model.get_weights())
@@ -139,3 +133,18 @@ def train(model, model_target, env):
             if running_reward > 40:
                 print('Solved at episode {}!'.format(episode_count))
                 break
+
+@tf.function
+def predict_target(model_target, state_next_sample):
+    future_rewards = model_target(state_next_sample)
+    return future_rewards
+
+@tf.function
+def backpropagation(model, optimizer, loss_function, state_sample, updated_q_values, masks):
+    with tf.GradientTape() as tape:
+        q_values = model(state_sample)
+        q_action = tf.reduce_sum(tf.multiply(q_values, masks), axis=1)
+        loss = loss_function(updated_q_values, q_action)
+
+    grads = tape.gradient(loss, model.trainable_variables)
+    optimizer.apply_gradients(zip(grads, model.trainable_variables))
