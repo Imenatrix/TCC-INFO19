@@ -1,3 +1,7 @@
+# Objetivo
+
+Analisar, reproduzir e possivelmente incrementar soluções existentes de Reinforcement Learning para os desafios propostos na competição [MineRL](https://minerl.io/).
+
 # Refêrencias
 
 1. [MineRL](https://minerl.io/)
